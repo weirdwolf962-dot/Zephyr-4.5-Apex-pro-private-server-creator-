@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zephyr AI Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Tokyo Night Dark Theme for High-Contrast Colourful Syntax -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
+    <!-- Added typography plugin to the Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              background: 'var(--background)',
+              foreground: 'var(--foreground)',
+            }
+          }
+        }
+      }
+    </script>
+    <script>
+      // Prevents flash of unstyled content
+      if (localStorage.getItem('zephyr-theme') === 'dark' || (!('zephyr-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <style>
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; 
+        border-radius: 4px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #334155; 
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; 
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #475569; 
+      }
+
+      .loading-container {
+        text-align: center;
+        position: relative;
+        padding: 40px;
+        max-width: 90%;
+      }
+
+      .logo-text {
+        font-size: 72px;
+        font-weight: 800;
+        letter-spacing: -2px;
+        background: linear-gradient(135deg, #2563eb, #9333ea);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 24px;
+        opacity: 0;
+        animation: fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      .credit-text {
+        font-size: 16px;
+        font-weight: 500;
+        color: #64748b;
+        opacity: 0;
+        animation: fadeIn 0.8s ease-out 0.4s forwards;
+      }
+      .dark .credit-text { color: #94a3b8; }
+
+      @keyframes fadeInScale {
+        from { opacity: 0; transform: scale(0.9); filter: blur(10px); }
+        to { opacity: 1; transform: scale(1); filter: blur(0); }
+      }
+      
+      @keyframes fadeIn {
+         from { opacity: 0; transform: translateY(10px); }
+         to   { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Explicit Colour Overrides for Highlight.js tokens to ensure they are visible */
+      .hljs {
+        background: transparent !important;
+        padding: 0 !important;
+      }
+      .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-section, .hljs-link { color: #bb9af7 !important; }
+      .hljs-function, .hljs-title { color: #7aa2f7 !important; }
+      .hljs-string, .hljs-attribute { color: #9ece6a !important; }
+      .hljs-number, .hljs-class { color: #ff9e64 !important; }
+      .hljs-comment { color: #565f89 !important; font-style: italic; }
+      .hljs-attr, .hljs-variable { color: #e0af68 !important; }
+      .hljs-params { color: #cfc9c2 !important; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "path": "https://aistudiocdn.com/path@^0.12.7",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
+    "vite": "https://aistudiocdn.com/vite@^7.2.2",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
