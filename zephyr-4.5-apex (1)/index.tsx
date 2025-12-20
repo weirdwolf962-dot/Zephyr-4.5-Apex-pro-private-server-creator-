@@ -10,6 +10,8 @@ const helperMessages = [
   "Need a clear explanation or example?",
   "Ready to learn something new today?",
   "Homework, ideas, or curiosity — I’ve got you.",
+  "can’t find new places to go, I can help you.",
+  "Craft your imagination through /image"
 ];
 
 // Use marked from CDN
