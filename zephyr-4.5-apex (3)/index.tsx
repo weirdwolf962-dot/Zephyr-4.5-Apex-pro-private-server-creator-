@@ -4,6 +4,71 @@ import ReactDOM from 'react-dom/client';
 import { GoogleGenAI, Modality } from "@google/genai";
 import { Message, Role } from './types';
 import { selectAgent, generateImageUrl } from './agentManager';
+import { ChevronDown } from "lucide-react";
+
+const models = [
+  {
+    name: "Zephyr 3.5 Nova",
+    url: "https://zephyr-3-5-nova.vercel.app/",
+  },
+  {
+    name: "Zephyr 4.5 Swift",
+    url: "https://zephyr-4-5-swift.vercel.app/",
+  },
+  {
+    name: "Zephyr 4.5 Apex",
+    url: "https://zephyr-4-5-apex-pro.vercel.app",
+  },
+  {
+    name: "Zephyr 5.0 Cortex",
+    url: "https://zephyr-4-5-apex-pro-private-server-coral.vercel.app/",
+  },
+];
+
+export default function ModelSwitcher() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative inline-block text-left">
+      
+      {/* Trigger */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1 text-[8px] font-bold tracking-widest uppercase 
+                   text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 
+                   transition"
+      >
+        Model: Zephyr 5.0 Cortex
+        <ChevronDown size={10} />
+      </button>
+
+      {/* Dropdown */}
+      {open && (
+        <div
+          className="absolute left-0 mt-2 w-56 rounded-lg border 
+                     border-zinc-200 dark:border-zinc-800 
+                     bg-white dark:bg-zinc-950 
+                     shadow-lg z-50"
+        >
+          {models.map((model) => (
+            <button
+              key={model.name}
+              onClick={() => {
+                window.location.href = model.url;
+              }}
+              className="block w-full text-left px-4 py-2 text-xs
+                         text-zinc-700 dark:text-zinc-300
+                         hover:bg-zinc-100 dark:hover:bg-zinc-900
+                         transition"
+            >
+              {model.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const helperMessages = [
   "Ask anything — concepts, ideas, or doubts.",
@@ -744,7 +809,7 @@ const App = () => {
           </button>
           <div className="flex flex-col">
             <h1 className="text-lg font-black tracking-tighter bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Zephyr</h1>
-            <span className="text-[8px] font-bold tracking-widest text-zinc-400 dark:text-zinc-500 uppercase -mt-0.5">Model: Zephyr 5.0 Cortex</span>
+            <ModelSwitcher />
           </div>
         </div>
         <div className="flex items-center gap-2">
