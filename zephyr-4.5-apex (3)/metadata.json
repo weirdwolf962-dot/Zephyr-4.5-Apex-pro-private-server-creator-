@@ -1,0 +1,8 @@
+{
+  "name": "Zephyr 4.5 Apex",
+  "description": "An intelligent AI chatbot named Zephyr that can provide real-time information on date, time, and current events, built with React and the Gemini API. The interface features a clean, minimalist black and white design.",
+  "requestFramePermissions": [
+    "microphone",
+    "geolocation"
+  ]
+}
