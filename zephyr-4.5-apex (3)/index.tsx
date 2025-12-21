@@ -4,62 +4,37 @@ import ReactDOM from 'react-dom/client';
 import { GoogleGenAI, Modality } from "@google/genai";
 import { Message, Role } from './types';
 import { selectAgent, generateImageUrl } from './agentManager';
-import { ChevronDown } from "lucide-react";
+
+// --- Custom Icons & Components ---
+const ChevronDown = ({ size = 16 }: { size?: number }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+);
 
 const models = [
-  {
-    name: "Zephyr 3.5 Nova",
-    url: "https://zephyr-3-5-nova.vercel.app/",
-  },
-  {
-    name: "Zephyr 4.5 Swift",
-    url: "https://zephyr-4-5-swift.vercel.app/",
-  },
-  {
-    name: "Zephyr 4.5 Apex",
-    url: "https://zephyr-4-5-apex-pro.vercel.app",
-  },
-  {
-    name: "Zephyr 5.0 Cortex",
-    url: "https://zephyr-4-5-apex-pro-private-server-coral.vercel.app/",
-  },
+  { name: "Zephyr 3.5 Nova", url: "https://zephyr-3-5-nova.vercel.app/" },
+  { name: "Zephyr 4.5 Swift", url: "https://zephyr-4-5-swift.vercel.app/" },
+  { name: "Zephyr 4.5 Apex", url: "https://zephyr-4-5-apex-pro.vercel.app" },
+  { name: "Zephyr 5.0 Cortex", url: "https://zephyr-4-5-apex-pro-private-server-coral.vercel.app/" },
 ];
 
-export default function ModelSwitcher() {
+function ModelSwitcher() {
   const [open, setOpen] = useState(false);
-
   return (
     <div className="relative inline-block text-left">
-      
-      {/* Trigger */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1 text-[8px] font-bold tracking-widest uppercase 
-                   text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 
-                   transition"
+        className="flex items-center gap-1 text-[8px] font-bold tracking-widest uppercase text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 transition"
       >
         Model: Zephyr 5.0 Cortex
         <ChevronDown size={10} />
       </button>
-
-      {/* Dropdown */}
       {open && (
-        <div
-          className="absolute left-0 mt-2 w-56 rounded-lg border 
-                     border-zinc-200 dark:border-zinc-800 
-                     bg-white dark:bg-zinc-950 
-                     shadow-lg z-50"
-        >
+        <div className="absolute left-0 mt-2 w-48 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-xl z-50 overflow-hidden">
           {models.map((model) => (
             <button
               key={model.name}
-              onClick={() => {
-                window.location.href = model.url;
-              }}
-              className="block w-full text-left px-4 py-2 text-xs
-                         text-zinc-700 dark:text-zinc-300
-                         hover:bg-zinc-100 dark:hover:bg-zinc-900
-                         transition"
+              onClick={() => { window.location.href = model.url; }}
+              className="block w-full text-left px-3 py-2 text-[10px] text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition font-bold"
             >
               {model.name}
             </button>
@@ -125,65 +100,31 @@ if (typeof window !== 'undefined') {
     try {
       const code = decodeURIComponent(encodedCode);
       await navigator.clipboard.writeText(code);
-      
       const originalHtml = btn.innerHTML;
-      btn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span class="text-green-500">Copied!</span>
-      `;
-      
-      setTimeout(() => {
-        btn.innerHTML = originalHtml;
-      }, 2000);
-    } catch (err) {
-      console.error('Failed to copy code:', err);
-    }
+      btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg><span class="text-green-500">Copied!</span>`;
+      setTimeout(() => { btn.innerHTML = originalHtml; }, 2000);
+    } catch (err) { console.error('Failed to copy code:', err); }
   };
 
   if (typeof marked !== 'undefined') {
     const renderer = new marked.Renderer();
-    
     renderer.code = (arg1: any, arg2: any) => {
-      let codeText: string;
-      let language: string;
-
-      if (typeof arg1 === 'object' && arg1 !== null) {
-        codeText = arg1.text || '';
-        language = arg1.lang || '';
-      } else {
-        codeText = arg1 || '';
-        language = arg2 || '';
-      }
-
+      let codeText: string; let language: string;
+      if (typeof arg1 === 'object' && arg1 !== null) { codeText = arg1.text || ''; language = arg1.lang || ''; }
+      else { codeText = arg1 || ''; language = arg2 || ''; }
       const encodedCode = encodeURIComponent(codeText);
       const langLabel = language || 'code';
-      
       let highlighted;
       if (typeof hljs !== 'undefined') {
-        try {
-          if (language && hljs.getLanguage(language)) {
-            highlighted = hljs.highlight(codeText, { language }).value;
-          } else {
-            highlighted = hljs.highlightAuto(codeText).value;
-          }
-        } catch (err) {
-          highlighted = codeText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        }
-      } else {
-        highlighted = codeText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      }
-
+        try { if (language && hljs.getLanguage(language)) { highlighted = hljs.highlight(codeText, { language }).value; } else { highlighted = hljs.highlightAuto(codeText).value; } }
+        catch (err) { highlighted = codeText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+      } else { highlighted = codeText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
       return `
         <div class="my-3 rounded-lg overflow-hidden bg-[#1a1b26] border border-zinc-800/50 shadow-md animate-fade-in group/code not-prose">
           <div class="flex items-center justify-between px-3 py-1.5 bg-[#16161e] border-b border-zinc-700/30">
             <span class="text-[9px] font-mono text-zinc-500 select-none uppercase tracking-widest font-bold">${langLabel}</span>
-            <button 
-              onclick="window.copyCode('${encodedCode}', this)"
-              class="flex items-center gap-1 text-[9px] text-zinc-400 hover:text-white transition-all bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded select-none border border-transparent hover:border-zinc-700"
-              title="Copy code"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              COPY
+            <button onclick="window.copyCode('${encodedCode}', this)" class="flex items-center gap-1 text-[9px] text-zinc-400 hover:text-white transition-all bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded select-none border border-transparent hover:border-zinc-700" title="Copy code">
+              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>COPY
             </button>
           </div>
           <div class="p-3 overflow-x-auto scrollbar-thin scrollbar-thumb-zinc-700">
@@ -229,20 +170,7 @@ const Icons = {
 const LoadingScreen = () => (
   <div className="bg-white dark:bg-zinc-950 h-screen flex items-center justify-center font-sans overflow-hidden">
     <div className="loading-container z-10 flex flex-col items-center gap-3 animate-fade-in">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="40"
-        height="40"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="text-blue-600 dark:text-purple-400 drop-shadow-sm"
-      >
-        <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 dark:text-purple-400 drop-shadow-sm"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" /></svg>
       <div className="logo-text text-5xl sm:text-6xl">Zephyr</div>
       <div className="credit-text flex items-center justify-center gap-2">
         <span className="by-text text-[10px] sm:text-xs opacity-70">engineered by</span>
@@ -255,22 +183,16 @@ const LoadingScreen = () => (
 
 const extractCode = (text: string) => {
     const codeBlockRegex = /```(?:\w+)?\s*([\s\S]*?)```/g;
-    let matches = [];
-    let match;
-    while ((match = codeBlockRegex.exec(text)) !== null) {
-        matches.push(match[1].trim());
-    }
+    let matches = []; let match;
+    while ((match = codeBlockRegex.exec(text)) !== null) { matches.push(match[1].trim()); }
     return matches.length > 0 ? matches.join('\n\n') : null;
 };
 
 const CopyButton = ({ text }: { text: string }) => {
   const [isCopied, setIsCopied] = useState(false);
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) { console.error('Failed to copy text: ', err); }
+    try { await navigator.clipboard.writeText(text); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); }
+    catch (err) { console.error('Failed to copy text: ', err); }
   };
   return (
     <button onClick={handleCopy} className="p-1 rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" title="Copy to clipboard">
@@ -284,68 +206,32 @@ const SpeakerButton = ({ text, audioBuffer, onBufferReady }: { text: string, aud
   const [isLoading, setIsLoading] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
-
   const handlePlay = async () => {
-    if (isPlaying) {
-      sourceRef.current?.stop();
-      setIsPlaying(false);
-      return;
-    }
-
-    if (!audioContextRef.current) {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-    }
-
+    if (isPlaying) { sourceRef.current?.stop(); setIsPlaying(false); return; }
+    if (!audioContextRef.current) { audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 }); }
     const play = (buffer: AudioBuffer) => {
       if (!audioContextRef.current) return;
       const source = audioContextRef.current.createBufferSource();
-      source.buffer = buffer;
-      source.connect(audioContextRef.current.destination);
-      source.onended = () => setIsPlaying(false);
-      source.start();
-      sourceRef.current = source;
-      setIsPlaying(true);
+      source.buffer = buffer; source.connect(audioContextRef.current.destination);
+      source.onended = () => setIsPlaying(false); source.start();
+      sourceRef.current = source; setIsPlaying(true);
     };
-
-    if (audioBuffer) {
-      play(audioBuffer);
-      return;
-    }
-
+    if (audioBuffer) { play(audioBuffer); return; }
     setIsLoading(true);
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash-preview-tts",
         contents: [{ parts: [{ text }] }],
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: 'Kore' },
-            },
-          },
-        },
+        config: { responseModalities: [Modality.AUDIO], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } } },
       });
-
       const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
       if (base64Audio) {
-        const buffer = await decodeAudioData(
-          decodeBase64(base64Audio),
-          audioContextRef.current,
-          24000,
-          1,
-        );
-        onBufferReady(buffer);
-        play(buffer);
+        const buffer = await decodeAudioData(decodeBase64(base64Audio), audioContextRef.current, 24000, 1);
+        onBufferReady(buffer); play(buffer);
       }
-    } catch (err) {
-      console.error('Speech synthesis failed:', err);
-    } finally {
-      setIsLoading(false);
-    }
+    } catch (err) { console.error('Speech synthesis failed:', err); } finally { setIsLoading(false); }
   };
-
   return (
     <button onClick={handlePlay} disabled={isLoading} className={`p-1 rounded-md transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center gap-1 ${isPlaying ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20'} ${isLoading ? 'cursor-wait animate-pulse' : ''}`} title="Listen to message">
       <div className={isPlaying ? 'animate-pulse' : ''}><Icons.Speaker /></div>
@@ -356,14 +242,10 @@ const SpeakerButton = ({ text, audioBuffer, onBufferReady }: { text: string, aud
 
 const CopyAgentCodeButton = ({ text }: { text: string }) => {
   const [isCopied, setIsCopied] = useState(false);
-  const code = extractCode(text);
-  if (!code) return null;
+  const code = extractCode(text); if (!code) return null;
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) { console.error('Failed to copy code: ', err); }
+    try { await navigator.clipboard.writeText(code); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); }
+    catch (err) { console.error('Failed to copy code: ', err); }
   };
   return (
     <button onClick={handleCopy} className="p-1 rounded-md text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center gap-1" title="Copy all code">
@@ -378,38 +260,25 @@ const DownloadButton = ({ url }: { url: string }) => {
     try {
         const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
         if (!response.ok) throw new Error(`Failed to fetch image`);
-        const blob = await response.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = blobUrl;
-        link.download = `zephyr-image-${Date.now()}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(blobUrl);
-    } catch (e) {
-        console.warn("Direct download failed, falling back to new tab.", e);
-        window.open(url, '_blank');
-    }
+        const blob = await response.blob(); const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a'); link.href = blobUrl; link.download = `zephyr-image-${Date.now()}.jpg`;
+        document.body.appendChild(link); link.click(); document.body.removeChild(link); window.URL.revokeObjectURL(blobUrl);
+    } catch (e) { window.open(url, '_blank'); }
   };
   return (
-    <button onClick={handleDownload} className="p-1 rounded-md text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center gap-1" title="Download Image">
-      <Icons.Download />
-      <span className="text-[9px] font-medium">Download</span>
-    </button>
+    <button onClick={handleDownload} className="p-1 rounded-md text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 flex items-center gap-1" title="Download Image"><Icons.Download /><span className="text-[9px] font-medium">Download</span></button>
   );
 };
 
-// --- Memoized Message Component to Prevent Flicker ---
-const ChatMessage = React.memo(({ msg, onSetAudioBuffer }: { msg: AppMessage; onSetAudioBuffer: (id: string, buffer: AudioBuffer) => void }) => {
+interface AppMessage extends Message {
+    audioBuffer?: AudioBuffer;
+    suggestions?: string[];
+}
+
+const ChatMessage = React.memo(({ msg, onSetAudioBuffer, onDelete, onSelectSuggestion }: { msg: AppMessage; onSetAudioBuffer: (id: string, buffer: AudioBuffer) => void; onDelete: (id: string) => void; onSelectSuggestion: (text: string) => void }) => {
   const renderedText = useMemo(() => {
-    try {
-      if (typeof marked !== 'undefined' && marked.parse) {
-        return { __html: marked.parse(msg.text) };
-      }
-    } catch (e) {
-      console.error('Markdown parse error:', e);
-    }
+    try { if (typeof marked !== 'undefined' && marked.parse) { return { __html: marked.parse(msg.text) }; } }
+    catch (e) { console.error('Markdown parse error:', e); }
     return { __html: msg.text.replace(/\n/g, '<br/>') };
   }, [msg.text]);
 
@@ -424,27 +293,28 @@ const ChatMessage = React.memo(({ msg, onSetAudioBuffer }: { msg: AppMessage; on
           {msg.image && (
             <div className="relative group/img mb-3 rounded-xl overflow-hidden border border-white/20">
               <img src={msg.image} alt="Upload" className="max-w-full h-auto" />
-              <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-all duration-300 flex items-center justify-center">
-                <Icons.Sparkles />
-              </div>
+              <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/10 transition-all duration-300 flex items-center justify-center"><Icons.Sparkles /></div>
             </div>
           )}
           {msg.isLoading ? (
-            <div className="flex items-center space-x-1.5 py-1.5">
-              <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce"></div>
-              <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-            </div>
+            <div className="flex items-center space-x-1.5 py-1.5"><div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce"></div><div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div><div className="w-1.5 h-1.5 bg-zinc-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div></div>
           ) : msg.type === 'image' ? (
-            <div className="space-y-3">
-              <div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xl">
-                <img src={msg.text} alt="AI Generated" className="w-full h-auto transition-transform duration-700 hover:scale-102" />
-              </div>
-            </div>
+            <div className="space-y-3"><div className="rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800 shadow-xl"><img src={msg.text} alt="AI Generated" className="w-full h-auto transition-transform duration-700 hover:scale-102" /></div></div>
           ) : (
             <div className={`prose prose-sm leading-relaxed break-words ${msg.role === Role.USER ? 'prose-invert text-white' : 'dark:prose-invert text-zinc-800 dark:text-zinc-200'}`} dangerouslySetInnerHTML={renderedText} />
           )}
         </div>
+        
+        {msg.suggestions && msg.suggestions.length > 0 && !msg.isLoading && (
+            <div className="flex flex-wrap gap-2 mt-3 animate-fade-in">
+                {msg.suggestions.map((suggestion, i) => (
+                    <button key={i} onClick={() => onSelectSuggestion(suggestion)} className="px-3 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full text-[10px] font-bold text-zinc-600 dark:text-zinc-400 hover:border-blue-500 hover:text-blue-600 transition-all active:scale-95 shadow-sm">
+                        {suggestion}
+                    </button>
+                ))}
+            </div>
+        )}
+
         <div className={`flex flex-col gap-2 mt-2 ${msg.role === Role.USER ? 'items-end' : 'items-start'} w-full`}>
           {msg.sources && msg.sources.length > 0 && (
             <div className="flex flex-wrap gap-1.5 py-1.5">
@@ -460,14 +330,11 @@ const ChatMessage = React.memo(({ msg, onSetAudioBuffer }: { msg: AppMessage; on
             <div className="flex items-center gap-2">
               <CopyButton text={msg.text} />
               {msg.role === Role.MODEL && (
-                <SpeakerButton 
-                  text={msg.text} 
-                  audioBuffer={msg.audioBuffer} 
-                  onBufferReady={(buffer) => onSetAudioBuffer(msg.id!, buffer)} 
-                />
+                <SpeakerButton text={msg.text} audioBuffer={msg.audioBuffer} onBufferReady={(buffer) => onSetAudioBuffer(msg.id!, buffer)} />
               )}
               {msg.agentName === 'Coder Agent' && <CopyAgentCodeButton text={msg.text} />}
               {msg.type === 'image' && <DownloadButton url={msg.text} />}
+              <button onClick={() => onDelete(msg.id!)} className="p-1 rounded-md text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" title="Delete message"><Icons.Trash /></button>
             </div>
           )}
         </div>
@@ -476,13 +343,9 @@ const ChatMessage = React.memo(({ msg, onSetAudioBuffer }: { msg: AppMessage; on
   );
 });
 
-const HistorySidebar = ({ isOpen, onClose, history, onLoadChat, onDeleteChat, onNewChat }: {
-    isOpen: boolean; onClose: () => void; history: Message[][]; onLoadChat: (index: number) => void; onDeleteChat: (index: number) => void; onNewChat: () => void;
-}) => {
+const HistorySidebar = ({ isOpen, onClose, history, onLoadChat, onDeleteChat, onNewChat }: { isOpen: boolean; onClose: () => void; history: Message[][]; onLoadChat: (index: number) => void; onDeleteChat: (index: number) => void; onNewChat: () => void; }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const filteredHistory = history
-    .map((chat, index) => ({ chat, index }))
-    .filter(({ chat }) => {
+  const filteredHistory = history.map((chat, index) => ({ chat, index })).filter(({ chat }) => {
         const firstUserMsg = chat.find(m => m.role === Role.USER);
         const title = firstUserMsg?.text || (firstUserMsg?.image ? "Image uploaded" : "New Conversation");
         return title.toLowerCase().includes(searchTerm.toLowerCase());
@@ -491,37 +354,15 @@ const HistorySidebar = ({ isOpen, onClose, history, onLoadChat, onDeleteChat, on
     <>
       <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-r border-zinc-200 dark:border-zinc-800 transform transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${isOpen ? 'translate-x-0' : '-translate-x-full'}`} aria-modal="true" role="dialog">
         <div className="flex flex-col h-full">
-          <div className="p-5 flex justify-between items-center">
-            <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100">Conversations</h2>
-            <button onClick={onClose} className="p-1.5 -mr-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors" aria-label="Close history">
-              <Icons.X />
-            </button>
-          </div>
-          <div className="px-5 pb-3">
-              <div className="relative group">
-                  <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-blue-500 transition-colors scale-75"><Icons.Search /></div>
-                  <input type="text" placeholder="Search history..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-8 pr-3 py-2 bg-zinc-100 dark:bg-zinc-900 border border-transparent focus:border-blue-500/50 rounded-xl text-xs outline-none text-zinc-700 dark:text-zinc-200 placeholder:text-zinc-400 transition-all shadow-inner" />
-              </div>
-          </div>
-          <div className="px-5 pb-4 border-b border-zinc-200 dark:border-zinc-800">
-             <button onClick={onNewChat} className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md active:scale-95"><Icons.Plus />New</button>
-          </div>
+          <div className="p-5 flex justify-between items-center"><h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100">Conversations</h2><button onClick={onClose} className="p-1.5 -mr-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition-colors" aria-label="Close history"><Icons.X /></button></div>
+          <div className="px-5 pb-3"><div className="relative group"><div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-blue-500 transition-colors scale-75"><Icons.Search /></div><input type="text" placeholder="Search history..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-8 pr-3 py-2 bg-zinc-100 dark:bg-zinc-900 border border-transparent focus:border-blue-500/50 rounded-xl text-xs outline-none text-zinc-700 dark:text-zinc-200 placeholder:text-zinc-400 transition-all shadow-inner" /></div></div>
+          <div className="px-5 pb-4 border-b border-zinc-200 dark:border-zinc-800"><button onClick={onNewChat} className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-all shadow-md active:scale-95"><Icons.Plus />New</button></div>
           <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
             {filteredHistory.length === 0 ? (
-                <div className="flex flex-col items-center justify-center mt-12 text-zinc-400 dark:text-zinc-600 space-y-1.5 opacity-60">
-                    <Icons.Bot />
-                    <p className="text-xs font-medium">{searchTerm ? "No results" : "Empty history"}</p>
-                </div>
+                <div className="flex flex-col items-center justify-center mt-12 text-zinc-400 dark:text-zinc-600 space-y-1.5 opacity-60"><Icons.Bot /><p className="text-xs font-medium">{searchTerm ? "No results" : "Empty history"}</p></div>
             ) : (
                 filteredHistory.map(({ chat, index }) => (
-                    <div key={index} className="group flex items-center gap-0.5">
-                        <button onClick={() => onLoadChat(index)} className="flex-1 flex items-center p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all text-left group-hover:translate-x-0.5">
-                            <span className="truncate text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                            {chat.find(m => m.role === Role.USER)?.text || (chat.find(m => m.role === Role.USER)?.image ? "Captured moment" : "Untitled session")}
-                            </span>
-                        </button>
-                        <button onClick={() => onDeleteChat(index)} className="p-2 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 opacity-0 group-hover:opacity-100 transition-all" aria-label="Delete chat"><Icons.Trash /></button>
-                    </div>
+                    <div key={index} className="group flex items-center gap-0.5"><button onClick={() => onLoadChat(index)} className="flex-1 flex items-center p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all text-left group-hover:translate-x-0.5"><span className="truncate text-xs font-medium text-zinc-700 dark:text-zinc-300">{chat.find(m => m.role === Role.USER)?.text || (chat.find(m => m.role === Role.USER)?.image ? "Captured moment" : "Untitled session")}</span></button><button onClick={() => onDeleteChat(index)} className="p-2 rounded-lg text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 opacity-0 group-hover:opacity-100 transition-all" aria-label="Delete chat"><Icons.Trash /></button></div>
                 ))
             )}
           </nav>
@@ -533,18 +374,12 @@ const HistorySidebar = ({ isOpen, onClose, history, onLoadChat, onDeleteChat, on
 };
 
 const AgentBadge = ({ name }: { name: string }) => {
-    let Icon = Icons.Bot;
-    let color = "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
-    let border = "border-zinc-200 dark:border-zinc-700";
+    let Icon = Icons.Bot; let color = "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"; let border = "border-zinc-200 dark:border-zinc-700";
     if (name === "News Agent") { Icon = Icons.Newspaper; color = "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300"; border = "border-blue-200 dark:border-blue-800"; }
     else if (name === "Science Agent") { Icon = Icons.Beaker; color = "bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-300"; border = "border-emerald-200 dark:border-emerald-800"; }
     else if (name === "Coder Agent") { Icon = Icons.Terminal; color = "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-300"; border = "border-amber-200 dark:border-amber-800"; }
     else if (name === "Creative Agent") { Icon = Icons.Feather; color = "bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-300"; border = "border-purple-200 dark:border-purple-800"; }
-    return (
-        <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${color} ${border} mb-2 animate-fade-in`}>
-            <Icon />{name}
-        </div>
-    );
+    return (<div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${color} ${border} mb-2 animate-fade-in`}><Icon />{name}</div>);
 };
 
 const SuggestionCard = ({ text, subtext, onClick, icon: Icon }: { text: string, subtext: string, onClick: () => void, icon?: any }) => (
@@ -554,34 +389,6 @@ const SuggestionCard = ({ text, subtext, onClick, icon: Icon }: { text: string, 
         <span className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">{subtext}</span>
     </button>
 );
-
-const processImage = (file: File): Promise<{ data: string; mimeType: string; url: string }> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width, height = img.height, maxDim = 1536; 
-        if (width > maxDim || height > maxDim) { const ratio = Math.min(maxDim / width, maxDim / height); width *= ratio; height *= ratio; }
-        canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) { reject(new Error("Canvas context unavailable")); return; }
-        ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, width, height); ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        resolve({ url: dataUrl, data: dataUrl.split(',')[1], mimeType: 'image/jpeg' });
-      };
-      img.onerror = () => reject(new Error("Failed to load image"));
-      if (typeof e.target?.result === 'string') img.src = e.target.result; else reject(new Error("File read failed"));
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
-
-interface AppMessage extends Message {
-    audioBuffer?: AudioBuffer;
-}
 
 const App = () => {
   const [showLoadingScreen, setShowLoadingScreen] = useState(true);
@@ -593,8 +400,7 @@ const App = () => {
   const [chatHistory, setChatHistory] = useState<AppMessage[][]>([]);
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
-      const storedTheme = window.localStorage.getItem('zephyr-theme');
-      if (storedTheme) return storedTheme;
+      const storedTheme = window.localStorage.getItem('zephyr-theme'); if (storedTheme) return storedTheme;
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     return 'light';
@@ -612,19 +418,8 @@ const App = () => {
   }, [theme]);
   useEffect(() => { const timer = setTimeout(() => setShowLoadingScreen(false), 2500); return () => clearTimeout(timer); }, []);
   
-  useEffect(() => { 
-    try { 
-        const savedHistory = localStorage.getItem('zephyrChatHistory'); 
-        if (savedHistory) setChatHistory(JSON.parse(savedHistory)); 
-    } catch (e) {} 
-  }, []);
-
-  useEffect(() => { 
-    try { 
-        const serializableHistory = chatHistory.map(chat => chat.map(({ audioBuffer, ...rest }) => rest));
-        localStorage.setItem('zephyrChatHistory', JSON.stringify(serializableHistory)); 
-    } catch (e) {} 
-  }, [chatHistory]);
+  useEffect(() => { try { const savedHistory = localStorage.getItem('zephyrChatHistory'); if (savedHistory) setChatHistory(JSON.parse(savedHistory)); } catch (e) {} }, []);
+  useEffect(() => { try { const serializableHistory = chatHistory.map(chat => chat.map(({ audioBuffer, ...rest }) => rest)); localStorage.setItem('zephyrChatHistory', JSON.stringify(serializableHistory)); } catch (e) {} }, [chatHistory]);
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -645,55 +440,47 @@ const App = () => {
   const startNewChat = () => { archiveCurrentChat(); setMessages([]); setAttachment(null); setInput(''); setIsHistoryOpen(false); };
   const loadChat = (index: number) => { archiveCurrentChat(); setMessages(chatHistory[index]); setChatHistory(prev => prev.filter((_, i) => i !== index)); setIsHistoryOpen(false); };
   const deleteChat = (index: number) => { setChatHistory(prev => prev.filter((_, i) => i !== index)); };
+  
+  const deleteMessage = useCallback((id: string) => { setMessages(prev => prev.filter(m => m.id !== id)); }, []);
 
-  const getCurrentPosition = (): Promise<GeolocationPosition> => {
-    return new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 });
-    });
+  const getCurrentPosition = (): Promise<GeolocationPosition> => { return new Promise((resolve, reject) => { navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 }); }); };
+
+  const setAudioBufferForMessage = useCallback((id: string, buffer: AudioBuffer) => { setMessages(prev => prev.map(m => m.id === id ? { ...m, audioBuffer: buffer } : m)); }, []);
+
+  const generateSuggestions = async (chatContext: AppMessage[]) => {
+    const apiKey = process.env.API_KEY; if (!apiKey) return;
+    try {
+        const ai = new GoogleGenAI({ apiKey });
+        const lastMsg = chatContext[chatContext.length - 1]?.text;
+        const prompt = `Based on the conversation, suggest 3 extremely short follow-up questions (max 5 words each) for the user to ask next. Format: Return ONLY a JSON array of strings. Context: "${lastMsg}"`;
+        const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
+        const cleanText = response.text?.replace(/```json|```/g, '').trim();
+        const suggestions = JSON.parse(cleanText || "[]");
+        if (Array.isArray(suggestions) && suggestions.length > 0) {
+            setMessages(prev => prev.map((m, i) => i === prev.length - 1 ? { ...m, suggestions } : m));
+        }
+    } catch (e) { console.warn("Suggestions generation failed", e); }
   };
-
-  const setAudioBufferForMessage = useCallback((id: string, buffer: AudioBuffer) => {
-    setMessages(prev => prev.map(m => m.id === id ? { ...m, audioBuffer: buffer } : m));
-  }, []);
 
   const sendMessage = async (messageText: string, imageAttachment?: { data: string; mimeType: string; url: string }) => {
     const isBusy = messages.some(m => m.isLoading);
     if ((!messageText.trim() && !imageAttachment) || isBusy) return;
-
     const userMsgId = Date.now().toString() + '-user';
     const placeholderId = Date.now().toString() + '-model';
-
-    const userMessage: AppMessage = { 
-        role: Role.USER, 
-        text: messageText.trim(),
-        image: imageAttachment?.url,
-        id: userMsgId,
-        isLoading: false
-    };
-
+    const userMessage: AppMessage = { role: Role.USER, text: messageText.trim(), image: imageAttachment?.url, id: userMsgId, isLoading: false };
     const lowerCaseInput = messageText.trim().toLowerCase();
     
     if (lowerCaseInput.startsWith("/image ")) {
         const prompt = messageText.trim().substring(7);
         if (prompt) {
-            setMessages(prev => [...prev, userMessage, { 
-                role: Role.MODEL, text: generateImageUrl(prompt), type: 'image', agentName: "Creative Agent", id: placeholderId, isLoading: false 
-            }]);
-            setInput(''); setAttachment(null);
-            return;
+            setMessages(prev => [...prev, userMessage, { role: Role.MODEL, text: generateImageUrl(prompt), type: 'image', agentName: "Creative Agent", id: placeholderId, isLoading: false }]);
+            setInput(''); setAttachment(null); return;
         }
     }
 
     const selectedAgent = await selectAgent(messageText);
     const agentName = selectedAgent ? selectedAgent.name : "Zephyr";
-
-    setMessages(prev => [...prev, userMessage, { 
-        role: Role.MODEL, 
-        text: '', 
-        agentName: agentName, 
-        id: placeholderId, 
-        isLoading: true 
-    }]);
+    setMessages(prev => [...prev, userMessage, { role: Role.MODEL, text: '', agentName: agentName, id: placeholderId, isLoading: true }]);
     setInput(''); setAttachment(null);
     
     if (!imageAttachment) {
@@ -701,98 +488,42 @@ const App = () => {
             setMessages(prev => prev.map(m => m.id === placeholderId ? { ...m, text: `The current date and time is: ${new Date().toLocaleString()}`, isLoading: false } : m));
             return;
         }
-        if (/\b(developed you|your developer|your creator|created you|made you)\b/.test(lowerCaseInput) && !lowerCaseInput.includes("quantum coders")) {
-            setMessages(prev => prev.map(m => m.id === placeholderId ? { ...m, text: "I was created by **Mohammad Rayyan Ali** from Quantum Coders.", isLoading: false } : m));
-            return;
-        }
     }
 
-    const apiKey = process.env.API_KEY;
-    if (!apiKey) {
-        setMessages(prev => prev.map(m => m.id === placeholderId ? { ...m, text: "Error: No API Key configured.", isLoading: false } : m));
-        return;
-    }
+    const apiKey = process.env.API_KEY; if (!apiKey) { setMessages(prev => prev.map(m => m.id === placeholderId ? { ...m, text: "Error: No API Key configured.", isLoading: false } : m)); return; }
 
     try {
         const ai = new GoogleGenAI({ apiKey });
-        const finalSystemInstruction = selectedAgent 
-            ? `${selectedAgent.instructions}\n\nCURRENT AGENT MODE: ${agentName}\nROLE: ${selectedAgent.role}\nDESCRIPTION: ${selectedAgent.description}`
-            : "You are Zephyr, a helpful AI assistant. Respond clearly using Markdown. You were built by Quantum Coders.";
-
+        const finalSystemInstruction = selectedAgent ? `${selectedAgent.instructions}\n\nCURRENT AGENT MODE: ${agentName}\nROLE: ${selectedAgent.role}\nDESCRIPTION: ${selectedAgent.description}` : "You are Zephyr, a helpful AI assistant. Respond clearly using Markdown. You were built by Quantum Coders.";
         const historyForAPI = messages.filter(m => !m.isLoading).map(msg => ({ role: msg.role, parts: [{ text: msg.text }] }));
         const currentParts: any[] = [];
         if (messageText.trim()) currentParts.push({ text: messageText.trim() });
         if (imageAttachment) currentParts.push({ inlineData: { mimeType: imageAttachment.mimeType, data: imageAttachment.data } });
-
         const contents = [...historyForAPI, { role: Role.USER, parts: currentParts }];
-        
         const tools: any[] = [{ googleSearch: {} }];
         let toolConfig: any = undefined;
-
-        const isMapQuery = /\b(near|nearby|location|place|restaurant|cafe|hotel|park|address|direction|where is|at)\b/i.test(lowerCaseInput);
-        if (isMapQuery) {
-          tools.push({ googleMaps: {} });
-          try {
-            const pos = await getCurrentPosition();
-            toolConfig = {
-              retrievalConfig: {
-                latLng: {
-                  latitude: pos.coords.latitude,
-                  longitude: pos.coords.longitude
-                }
-              }
-            };
-          } catch (e) {}
+        if (/\b(near|nearby|location|place|restaurant|cafe|hotel|park|address|direction|where is|at)\b/i.test(lowerCaseInput)) {
+          tools.push({ googleMaps: {} }); try { const pos = await getCurrentPosition(); toolConfig = { retrievalConfig: { latLng: { latitude: pos.coords.latitude, longitude: pos.coords.longitude } } }; } catch (e) {}
         }
-
-        const responseStream = await ai.models.generateContentStream({
-            model: 'gemini-2.5-flash',
-            contents: contents,
-            config: {
-                systemInstruction: finalSystemInstruction,
-                tools: tools,
-                toolConfig: toolConfig
-            },
-        });
-        
-        let fullText = "";
-        let accumulatedSources: {title: string, uri: string}[] = [];
-
+        const responseStream = await ai.models.generateContentStream({ model: 'gemini-2.5-flash', contents: contents, config: { systemInstruction: finalSystemInstruction, tools: tools, toolConfig: toolConfig }, });
+        let fullText = ""; let accumulatedSources: {title: string, uri: string}[] = [];
         for await (const chunk of responseStream) {
             const text = chunk.text;
-            if (text) {
-                fullText += text;
-                setMessages(prev => prev.map(msg => 
-                    msg.id === placeholderId ? { ...msg, text: fullText, isLoading: false } : msg
-                ));
-            }
+            if (text) { fullText += text; setMessages(prev => prev.map(msg => msg.id === placeholderId ? { ...msg, text: fullText, isLoading: false } : msg)); }
             const groundingChunks = chunk.candidates?.[0]?.groundingMetadata?.groundingChunks;
             if (groundingChunks) {
-                const sources = groundingChunks.map((c: any) => {
-                  if (c.web) return c.web;
-                  if (c.maps) return c.maps;
-                  return null;
-                }).filter((s: any) => !!(s?.uri && s.title));
-                
-                if (sources.length > 0) {
-                     accumulatedSources = [...accumulatedSources, ...sources.filter((s: any) => !accumulatedSources.some(exist => exist.uri === s.uri))];
-                     setMessages(prev => prev.map(msg => msg.id === placeholderId ? { ...msg, sources: accumulatedSources } : msg));
-                }
+                const sources = groundingChunks.map((c: any) => c.web || c.maps).filter((s: any) => !!(s?.uri && s.title));
+                if (sources.length > 0) { accumulatedSources = [...accumulatedSources, ...sources.filter((s: any) => !accumulatedSources.some(exist => exist.uri === s.uri))]; setMessages(prev => prev.map(msg => msg.id === placeholderId ? { ...msg, sources: accumulatedSources } : msg)); }
             }
         }
-    } catch (error: any) {
-        setMessages(prev => prev.map(m => m.id === placeholderId ? { ...m, text: `Connection Error: ${error.message || "Failed to reach AI"}`, isLoading: false } : m));
-    }
+        // Generate follow-up suggestions after the stream finishes
+        generateSuggestions([...messages, userMessage, { role: Role.MODEL, text: fullText, id: placeholderId }]);
+    } catch (error: any) { setMessages(prev => prev.map(m => m.id === placeholderId ? { ...m, text: `Connection Error: ${error.message || "Failed to reach AI"}`, isLoading: false } : m)); }
   };
 
-  const handleMicClick = () => {
-    if (isRecording) recognitionRef.current?.stop();
-    else { setInput(''); try { recognitionRef.current?.start(); } catch (e) { setIsRecording(false); } }
-  };
-  
+  const handleMicClick = () => { if (isRecording) recognitionRef.current?.stop(); else { setInput(''); try { recognitionRef.current?.start(); } catch (e) { setIsRecording(false); } } };
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) { try { setAttachment(await processImage(file)); } catch (error) { alert("Failed to process image."); } }
+    const file = e.target.files?.[0]; if (file) { try { const reader = new FileReader(); reader.onload = (ev) => { const img = new Image(); img.onload = () => { const canvas = document.createElement('canvas'); let w = img.width, h = img.height; if (w > 1536 || h > 1536) { const r = Math.min(1536/w, 1536/h); w *= r; h *= r; } canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx?.drawImage(img, 0, 0, w, h); const data = canvas.toDataURL('image/jpeg', 0.8); setAttachment({ url: data, data: data.split(',')[1], mimeType: 'image/jpeg' }); }; img.src = ev.target?.result as string; }; reader.readAsDataURL(file); } catch (error) { alert("Failed to process image."); } }
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -801,108 +532,33 @@ const App = () => {
   return (
     <div className="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 h-screen flex flex-col font-sans transition-all duration-500 overflow-hidden">
       <HistorySidebar isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} history={chatHistory} onLoadChat={loadChat} onDeleteChat={deleteChat} onNewChat={startNewChat} />
-      
       <header className="h-16 flex items-center justify-between px-4 sm:px-6 border-b border-zinc-200/50 dark:border-zinc-800/50 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-xl sticky top-0 z-30 shrink-0">
-        <div className="flex items-center gap-3">
-          <button onClick={() => setIsHistoryOpen(true)} className="p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95 group">
-            <Icons.Menu />
-          </button>
-          <div className="flex flex-col">
-            <h1 className="text-lg font-black tracking-tighter bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Zephyr</h1>
-            <ModelSwitcher />
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-           <div className="hidden md:flex flex-col items-end mr-1">
-             <span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">Powered by</span>
-             <span className="text-[10px] font-black text-zinc-800 dark:text-zinc-200">Quantum Coders</span>
-           </div>
-           <button onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')} className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:shadow transition-all active:scale-90">
-             {theme === 'light' ? <Icons.Moon /> : <Icons.Sun />}
-           </button>
-        </div>
+        <div className="flex items-center gap-3"><button onClick={() => setIsHistoryOpen(true)} className="p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all active:scale-95 group"><Icons.Menu /></button><div className="flex flex-col"><h1 className="text-lg font-black tracking-tighter bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">Zephyr</h1><ModelSwitcher /></div></div>
+        <div className="flex items-center gap-2"><div className="hidden md:flex flex-col items-end mr-1"><span className="text-[8px] font-bold text-zinc-400 dark:text-zinc-600 uppercase tracking-widest">Powered by</span><span className="text-[10px] font-black text-zinc-800 dark:text-zinc-200">Quantum Coders</span></div><button onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')} className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:shadow transition-all active:scale-90">{theme === 'light' ? <Icons.Moon /> : <Icons.Sun />}</button></div>
       </header>
-
       <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-8 scroll-smooth">
         <div className="max-w-3xl mx-auto space-y-8 pb-4">
           {messages.length === 0 ? (
              <div className="relative flex flex-col items-center justify-center min-h-[60vh] animate-fade-in">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-[radial-gradient(circle,rgba(59,130,246,0.1)_0%,transparent_70%)] pointer-events-none -z-10 blur-3xl"></div>
-                <div className="mb-8 relative group">
-                    <div className="absolute -inset-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-[2rem] blur-xl opacity-20 group-hover:opacity-30 transition duration-1000"></div>
-                    <div className="relative w-20 h-20 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl flex items-center justify-center shadow-xl transition-transform duration-500 hover:rotate-3">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 dark:text-purple-400 drop-shadow-lg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-                    </div>
-                </div>
+                <div className="mb-8 relative group"><div className="absolute -inset-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-[2rem] blur-xl opacity-20 group-hover:opacity-30 transition duration-1000"></div><div className="relative w-20 h-20 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl flex items-center justify-center shadow-xl transition-transform duration-500 hover:rotate-3"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600 dark:text-purple-400 drop-shadow-lg"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div></div>
                 <h2 className="text-3xl font-black mb-3 text-center tracking-tight text-zinc-800 dark:text-zinc-100">How can I help you today?</h2>
                 <p className="text-center text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-10 max-w-sm">{helperText}</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl px-2">
-                    <SuggestionCard icon={Icons.Map} text="Discover Places" subtext="Locate best coffee shops and co-working spaces nearby." onClick={() => sendMessage("Find top-rated co-working spaces with high speed wifi nearby")} />
-                    <SuggestionCard icon={Icons.Newspaper} text="Live Insights" subtext="Current events, breaking news, and trending global updates." onClick={() => sendMessage("Summarize the most significant news headlines from the last 24 hours")} />
-                    <SuggestionCard icon={Icons.Terminal} text="Software Architect" subtext="Code generation, system design, and debugging expertise." onClick={() => sendMessage("Write a robust React hook for managing global state using Context and useReducer")} />
-                    <SuggestionCard icon={Icons.Sparkles} text="Neural Artistry" subtext="Create stunning visuals from pure text descriptions." onClick={() => sendMessage("/image A futuristic cyberpunk library with holographic scrolls")} />
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl px-2"><SuggestionCard icon={Icons.Map} text="Discover Places" subtext="Locate best coffee shops and co-working spaces nearby." onClick={() => sendMessage("Find top-rated co-working spaces with high speed wifi nearby")} /><SuggestionCard icon={Icons.Newspaper} text="Live Insights" subtext="Current events, breaking news, and trending global updates." onClick={() => sendMessage("Summarize the most significant news headlines from the last 24 hours")} /><SuggestionCard icon={Icons.Terminal} text="Software Architect" subtext="Code generation, system design, and debugging expertise." onClick={() => sendMessage("Write a robust React hook for managing global state using Context and useReducer")} /><SuggestionCard icon={Icons.Sparkles} text="Neural Artistry" subtext="Create stunning visuals from pure text descriptions." onClick={() => sendMessage("/image A futuristic cyberpunk library with holographic scrolls")} /></div>
              </div>
           ) : (
               <div className="flex flex-col gap-6">
-                {messages.map((msg, index) => (
-                    <ChatMessage 
-                      key={msg.id || index} 
-                      msg={msg} 
-                      onSetAudioBuffer={setAudioBufferForMessage} 
-                    />
-                ))}
+                {messages.map((msg, index) => (<ChatMessage key={msg.id || index} msg={msg} onSetAudioBuffer={setAudioBufferForMessage} onDelete={deleteMessage} onSelectSuggestion={(text) => sendMessage(text)} />))}
                 <div ref={messagesEndRef} className="h-6" />
               </div>
           )}
         </div>
       </main>
-
       <div className="p-4 sm:p-6 shrink-0 bg-transparent relative z-40">
         <div className="max-w-3xl mx-auto relative">
-          {attachment && (
-            <div className="absolute bottom-full mb-5 left-4 inline-flex items-center gap-2.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl px-3 py-2 rounded-2xl text-xs border border-zinc-200 dark:border-zinc-800 shadow-xl animate-fade-in z-50">
-                <div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 overflow-hidden shadow-sm border border-black/5"><img src={attachment.url} alt="preview" className="w-full h-full object-cover" /></div>
-                <div className="flex flex-col">
-                    <span className="text-zinc-800 dark:text-zinc-100 font-bold text-[10px]">Visual context</span>
-                    <span className="text-[9px] text-zinc-500 font-medium">Ready</span>
-                </div>
-                <button onClick={() => setAttachment(null)} className="ml-3 p-1.5 text-zinc-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"><Icons.X /></button>
-            </div>
-          )}
-          
-          <form onSubmit={(e) => { e.preventDefault(); sendMessage(input, attachment || undefined); }} className="relative flex items-center gap-2 bg-white dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] p-2.5 shadow-xl shadow-zinc-200/40 dark:shadow-black/40 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all backdrop-blur-xl group/input">
-             <input type="file" accept="image/*" onChange={handleFileSelect} ref={fileInputRef} className="hidden" />
-             <button type="button" onClick={() => fileInputRef.current?.click()} className="p-3 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-all active:scale-90" title="Attach visual context"><Icons.Paperclip /></button>
-            
-            <input 
-                type="text" 
-                value={input} 
-                onChange={(e) => setInput(e.target.value)} 
-                placeholder="Ask anything or /image..." 
-                className="flex-1 bg-transparent text-zinc-900 dark:text-zinc-100 py-2.5 px-1.5 focus:outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600 text-sm font-medium" 
-            />
-            
-            <div className="flex items-center gap-1.5">
-                {input.trim() || attachment ? (
-                    <button type="submit" disabled={messages.some(m => m.isLoading)} className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 active:scale-95 transition-all shadow-md disabled:opacity-50 group-hover/input:scale-105">
-                        <Icons.Send />
-                    </button>
-                ) : (
-                    <button type="button" onClick={handleMicClick} className={`p-3 rounded-full transition-all active:scale-90 ${isRecording ? 'bg-red-500 text-white animate-pulse shadow-red-500/30 shadow-lg' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}>
-                        {isRecording ? <Icons.MicActive /> : <Icons.Mic />}
-                    </button>
-                )}
-            </div>
-          </form>
-          
-          <div className="mt-4 flex items-center justify-center gap-5 opacity-30 hover:opacity-60 transition-opacity">
-            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest"></span>
-            <div className="w-0.5 h-0.5 bg-zinc-300 dark:bg-zinc-700 rounded-full"></div>
-            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Zephyr can be inaccurate. Check important info.</span>
-            <div className="w-0.5 h-0.5 bg-zinc-300 dark:bg-zinc-700 rounded-full"></div>
-            <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest"></span>
-          </div>
+          {attachment && (<div className="absolute bottom-full mb-5 left-4 inline-flex items-center gap-2.5 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl px-3 py-2 rounded-2xl text-xs border border-zinc-200 dark:border-zinc-800 shadow-xl animate-fade-in z-50"><div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 overflow-hidden shadow-sm border border-black/5"><img src={attachment.url} alt="preview" className="w-full h-full object-cover" /></div><div className="flex flex-col"><span className="text-zinc-800 dark:text-zinc-100 font-bold text-[10px]">Visual context</span><span className="text-[9px] text-zinc-500 font-medium">Ready</span></div><button onClick={() => setAttachment(null)} className="ml-3 p-1.5 text-zinc-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"><Icons.X /></button></div>)}
+          <form onSubmit={(e) => { e.preventDefault(); sendMessage(input, attachment || undefined); }} className="relative flex items-center gap-2 bg-white dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-[2rem] p-2.5 shadow-xl shadow-zinc-200/40 dark:shadow-black/40 focus-within:ring-2 focus-within:ring-blue-500/10 transition-all backdrop-blur-xl group/input"><input type="file" accept="image/*" onChange={handleFileSelect} ref={fileInputRef} className="hidden" /><button type="button" onClick={() => fileInputRef.current?.click()} className="p-3 text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-all active:scale-90" title="Attach visual context"><Icons.Paperclip /></button><input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask anything or /image..." className="flex-1 bg-transparent text-zinc-900 dark:text-zinc-100 py-2.5 px-1.5 focus:outline-none placeholder:text-zinc-400 dark:placeholder:text-zinc-600 text-sm font-medium" /><div className="flex items-center gap-1.5">{input.trim() || attachment ? (<button type="submit" disabled={messages.some(m => m.isLoading)} className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 active:scale-95 transition-all shadow-md disabled:opacity-50 group-hover/input:scale-105"><Icons.Send /></button>) : (<button type="button" onClick={handleMicClick} className={`p-3 rounded-full transition-all active:scale-90 ${isRecording ? 'bg-red-500 text-white animate-pulse shadow-red-500/30 shadow-lg' : 'text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}>{isRecording ? <Icons.MicActive /> : <Icons.Mic />}</button>)}</div></form>
+          <div className="mt-4 flex items-center justify-center gap-5 opacity-30 hover:opacity-60 transition-opacity"><span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Zephyr can be inaccurate. Check important info.</span></div>
         </div>
       </div>
     </div>
@@ -910,11 +566,5 @@ const App = () => {
 };
 
 const rootElement = document.getElementById('root');
-if (rootElement) {
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    );
-}
+if (rootElement) { const root = ReactDOM.createRoot(rootElement); root.render(<React.StrictMode><App /></React.StrictMode>); }
+
